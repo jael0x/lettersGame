@@ -1,15 +1,17 @@
-import React, { FC, useState } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import React, { FC } from 'react';
+import { StyleSheet, Text, GestureResponderEvent, TouchableHighlight } from 'react-native';
 
 const CustomButton: FC<{
-    letter: string
+    letter: string,
+    onPress: { (e?: GestureResponderEvent): void }
 }> = ({
-    letter
+    letter,
+    onPress = () => { },
 }) => {
         return (
-            <View style={styles.button}>
-                <Text>{letter}</Text>
-            </View>
+            <TouchableHighlight style={styles.button} onPress={onPress} underlayColor={'#B1191C'}>
+                <Text style={styles.letter}>{letter}</Text>
+            </TouchableHighlight>
         );
     };
 
@@ -24,6 +26,15 @@ const styles = StyleSheet.create({
         borderColor: '#B1191C',
         borderWidth: 2,
         borderRadius: 7
+    },
+    letter: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: 25,
+
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: -1, height: -1 },
+        textShadowRadius: 20
     }
 });
 
