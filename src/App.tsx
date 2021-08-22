@@ -1,6 +1,6 @@
 import React, { FC, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
-import { sliceRandomlyArrayInChunks } from './utils';
+import { mapLetterArray, ILetter } from './utils';
 import CustomButton from './components/CustomButton';
 import colors from './resources/colors';
 
@@ -10,44 +10,75 @@ const clearIcon = require('./resources/img/clear.png');
 
 const App: FC = () => {
 
-  const [letters] = useState<Array<Array<string>>>(sliceRandomlyArrayInChunks(lettersJson.board, 4));
+  const COLUMNS = 4;
+  const MAX_WORD_LENGTH = 6;
+  const [letters, setLetters] = useState(mapLetterArray(lettersJson.board, COLUMNS));
   const [word, setWord] = useState<string>('');
   const [validWord, setValidWord] = useState<boolean>(false);
 
-  const handleLetterPressed = (letter: string) => {
-    let newWord = word;
-    if (word.length < 6) newWord += letter;
-    else newWord = '';
-    setWord(newWord);
-    if (dictionaryJson.words.some((option: string) => option == newWord.toLowerCase()))
-      setValidWord(true);
-    else setValidWord(false);
+  const refreshApp = () => {
+    setWord('');
+    let newState = { ...letters };
+    for (let row = 1; row <= COLUMNS; row++) {
+      for (let col = 1; col <= COLUMNS; col++) {
+        let letter = newState[row][col]
+        letter.selected = false;
+      }
+    }
+    setLetters(newState);
   }
 
-  const renderLetters = () => {
-    return letters.map((row, rIndex) => {
-      return (
-        <View key={rIndex} style={{ flexDirection: 'row' }}>
-          {row.map((letter, lIndex) =>
-            <CustomButton key={lIndex} letter={letter} onPress={() => handleLetterPressed(letter)} />
-          )}
+  const handleLetterPressed = (row: number, col: number) => {
+    let newWord = '';
+    if (word.length < MAX_WORD_LENGTH) {
+      let newState = { ...letters };
+      let letter: ILetter = newState[row][col];
+      newWord = word + letter.char;
+      letter.selected = true;
+      setWord(newWord);
+      setLetters(newState);
+    }
+    else refreshApp();
+
+    if (dictionaryJson.words.some((option: string) => option == newWord.toLowerCase()))
+      setValidWord(true);
+    else
+      setValidWord(false);
+  }
+
+  const renderLetters = (row: number) => {
+    let render = [];
+    for (let col = 1; col <= COLUMNS; col++) {
+      let letter: ILetter = letters[row][col];
+      render.push(<CustomButton key={col} letter={letter} onPress={() => handleLetterPressed(row, col)} />);
+    }
+    return render;
+  }
+
+  const renderButtons = () => {
+    let render = [];
+    for (let row = 1; row <= COLUMNS; row++) {
+      render.push(
+        <View key={row} style={{ flexDirection: 'row' }}>
+          {renderLetters(row)}
         </View>
       );
-    });
+    }
+    return render;
   }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Letters Game</Text>
       <View>
-        <TouchableOpacity style={{ marginBottom: 10 }} disabled={!word} onPress={() => setWord('')}>
+        <TouchableOpacity style={{ marginBottom: 10 }} disabled={!word} onPress={() => refreshApp()}>
           <View style={styles.clearButton}>
             <Text style={[styles.clearText, { color: word.length > 0 ? colors.RED : colors.GREY }]}>clear word </Text>
             <Image source={clearIcon} style={[styles.clearIcon, { tintColor: word.length > 0 ? colors.RED : colors.GREY }]} resizeMode={'stretch'} />
           </View>
         </TouchableOpacity>
+        {renderButtons()}
         <View>
-          {renderLetters()}
         </View>
         <View style={styles.wordContainer}>
           <Text style={styles.word} numberOfLines={1} ellipsizeMode='head'>{word}</Text>
@@ -97,7 +128,8 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     justifyContent: 'space-between',
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    borderRadius: 7
   },
   word: {
     color: colors.GREEN,

@@ -1,16 +1,18 @@
 import React, { FC } from 'react';
 import { StyleSheet, Text, GestureResponderEvent, TouchableHighlight } from 'react-native';
+import { ILetter } from '../utils';
+import colors from '../resources/colors';
 
 const CustomButton: FC<{
-    letter: string,
+    letter: ILetter,
     onPress: { (e?: GestureResponderEvent): void }
 }> = ({
     letter,
     onPress = () => { },
 }) => {
         return (
-            <TouchableHighlight style={styles.button} onPress={onPress} underlayColor={'#B1191C'}>
-                <Text style={styles.letter}>{letter}</Text>
+            <TouchableHighlight style={[styles.button, { backgroundColor: letter.selected ? colors.GREEN : colors.ORANGE }]} onPress={onPress} underlayColor={colors.DARK_RED} disabled={letter.selected}>
+                <Text style={styles.letter}>{letter.char}</Text>
             </TouchableHighlight>
         );
     };
@@ -18,17 +20,17 @@ const CustomButton: FC<{
 const styles = StyleSheet.create({
     button: {
         margin: 5,
-        backgroundColor: '#F77C27',
+        backgroundColor: colors.ORANGE,
         width: 50,
         height: 50,
         justifyContent: 'center',
         alignItems: 'center',
-        borderColor: '#B1191C',
+        borderColor: colors.DARK_RED,
         borderWidth: 2,
         borderRadius: 7
     },
     letter: {
-        color: '#FFFFFF',
+        color: colors.WHITE,
         fontWeight: 'bold',
         fontSize: 25,
 
